@@ -295,8 +295,8 @@ static void task_oled(void *pvParameters) {
 	BUT_init();
 	
 	calendar rtc_initial = {2018, 3, 19, 12, 15, 45 ,1};
-	uint32_t current_hour, current_min, current_sec;
-	uint32_t current_year, current_month, current_day, current_week;
+	int current_hour, current_min, current_sec;
+	int current_year, current_month, current_day, current_week;
 	RTC_init(RTC, ID_RTC, rtc_initial, RTC_IER_ALREN | RTC_IER_SECEN);
 
 
