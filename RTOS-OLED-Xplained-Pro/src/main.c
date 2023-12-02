@@ -36,10 +36,10 @@
 #define LED3_PIO_IDX_MASK	(1 << LED3_PIO_IDX)
 
 
-xSemaphoreHandle xSemaphore;
-xSemaphoreHandle xSemaphoreClick;
-xSemaphoreHandle xSemaphoreRTC2;
-xSemaphoreHandle xSemaphoreRTCA;
+xSemaphoreHandle_t xSemaphore;
+xSemaphoreHandle_t xSemaphoreClick;
+xSemaphoreHandle_t xSemaphoreRTC2;
+xSemaphoreHandle_t xSemaphoreRTCA;
 
 typedef struct  {
 	uint32_t year;
@@ -87,7 +87,7 @@ static void BUT_init(void);
 /************************************************************************/
 
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName) {
-	printf("stack overflow %x %s\r\n", pxTask, (portCHAR *)pcTaskName);
+	//printf("stack overflow %x %s\r\n", pxTask, (portCHAR *)pcTaskName);
 	for (;;) {	}
 }
 
@@ -115,7 +115,7 @@ void RTT_Handler(void) {
 }
 
 static float get_time_rtt(){
-  uint ul_previous_time = rtt_read_timer_value(RTT); 
+  return uint ul_previous_time = rtt_read_timer_value(RTT); 
 }
 
 static void RTT_init(float freqPrescale, uint32_t IrqNPulses, uint32_t rttIRQSource) {
@@ -154,21 +154,21 @@ static void RTT_init(float freqPrescale, uint32_t IrqNPulses, uint32_t rttIRQSou
 
 void RTC_Handler(void) {
     uint32_t ul_status = rtc_get_status(RTC);
-	printf("RTC_Handler\n");
+	//printf("RTC_Handler\n");
 	
     /* Second Counter */
     if ((ul_status & RTC_SR_SEC) == RTC_SR_SEC) {	
 		BaseType_t xHigherPriorityTaskWoken = pdTRUE;
 		xSemaphoreGiveFromISR(xSemaphoreRTC2, &xHigherPriorityTaskWoken);
 		rtc_clear_status(RTC, RTC_SCCR_SECCLR);
-		printf("Second!\n");
+		//printf("Second!\n");
     }
 	
     /* Time or date alarm */
     if ((ul_status & RTC_SR_ALARM) == RTC_SR_ALARM) {
 		BaseType_t xHigherPriorityTaskWoken = pdTRUE;
 		xSemaphoreGiveFromISR(xSemaphoreRTCA, &xHigherPriorityTaskWoken);
-		printf("Alarm!\n");
+		//printf("Alarm!\n");
 
     }
 
@@ -283,7 +283,7 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
 void but_callback(void) {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	xSemaphoreGiveFromISR(xSemaphoreClick, &xHigherPriorityTaskWoken);
-	printf("but_callback\n");
+	//printf("but_callback\n");
 }
 
 /************************************************************************/
@@ -332,7 +332,7 @@ static void task_oled(void *pvParameters) {
 			rtc_get_date(RTC, &current_year, &current_month, &current_day, &current_week);
 			rtc_get_time(RTC, &current_hour, &current_min, &current_sec);
 			gfx_mono_draw_filled_rect(0, 0, 128, 32, GFX_PIXEL_CLR);
-			sprintf(lista,"%d:%d:%02d",current_hour, current_min, current_sec);
+			sprintf(lista,"%02d:%02d:%02d",current_hour, current_min, current_sec);
 			gfx_mono_draw_string(lista, 10, 10, &sysfont);
 		}
 		if(xSemaphoreTake(xSemaphoreRTCA, 10)){
